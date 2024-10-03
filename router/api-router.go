@@ -25,6 +25,12 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/reset_password", middleware.CriticalRateLimit(), middleware.TurnstileCheck(), controller.SendPasswordResetEmail)
 		apiRouter.POST("/user/reset", middleware.CriticalRateLimit(), controller.ResetPassword)
 		apiRouter.GET("/oauth/github", middleware.CriticalRateLimit(), controller.GitHubOAuth)
+
+		apiRouter.GET("/sign-in", middleware.CriticalRateLimit(), controller.LogtoSignIn)
+		apiRouter.GET("/callback", middleware.CriticalRateLimit(), controller.LogtoCallback)
+		apiRouter.GET("/user-info", middleware.CriticalRateLimit(), controller.LogtoUserInfo)
+		apiRouter.GET("/sign-out", middleware.CriticalRateLimit(), controller.LogtoSignOut)
+
 		apiRouter.GET("/oauth/state", middleware.CriticalRateLimit(), controller.GenerateOAuthCode)
 		apiRouter.GET("/oauth/wechat", middleware.CriticalRateLimit(), controller.WeChatAuth)
 		apiRouter.GET("/oauth/wechat/bind", middleware.CriticalRateLimit(), middleware.UserAuth(), controller.WeChatBind)
