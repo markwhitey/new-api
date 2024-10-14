@@ -18,6 +18,11 @@ var logtoConfig = &client.LogtoConfig{
 	Scopes:    []string{"email"},
 }
 
+type LogtoUser struct {
+	UserID string `json:"sub"`
+	Email  string `json:"email"`
+}
+
 func LogtoOAuth(c *gin.Context) {
 	session := sessions.Default(c)
 	state := c.Query("state")
