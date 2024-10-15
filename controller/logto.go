@@ -203,24 +203,29 @@ func LogtoCallback(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
-func LogtoUserInfo(c *gin.Context) {
+func LogtoUserInfo(c *gin.Context) *LogtoUser {
 	session := sessions.Default(c)
 	logtoClient := client.NewLogtoClient(logtoConfig, &SessionStorage{session: session})
 
 	if !logtoClient.IsAuthenticated() {
 		c.String(http.StatusUnauthorized, "You are not logged in.")
-		return
+		return nil
 	}
 
 	// 获取用户信息
 	userInfo, err := logtoClient.FetchUserInfo()
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
-		return
+		return nil
 	}
 
-	c.JSON(http.StatusOK, userInfo)
+	logtoUser := &LogtoUser{
+		UserID: userInfo.Sub,
+		Email:  userInfo.Email,
+	}
 
+	c.JSON(http.StatusOK, logtoUser)
+	return logtoUser
 }
 
 func LogtoSignOut(c *gin.Context) {
