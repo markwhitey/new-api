@@ -73,6 +73,8 @@ func InitOptionMap() {
 	common.OptionMap["Chats"] = constant.Chats2JsonString()
 	common.OptionMap["GitHubClientId"] = ""
 	common.OptionMap["GitHubClientSecret"] = ""
+	common.OptionMap["LogtoAppId"] = ""
+	common.OptionMap["LogtoAppSecret"] = ""
 	common.OptionMap["TelegramBotToken"] = ""
 	common.OptionMap["TelegramBotName"] = ""
 	common.OptionMap["WeChatServerAddress"] = ""
@@ -270,6 +272,10 @@ func updateOptionMap(key string, value string) (err error) {
 		common.GitHubClientId = value
 	case "GitHubClientSecret":
 		common.GitHubClientSecret = value
+	case "LogtoAppId":
+		common.LogtoAppId = value
+	case "LogtoAppSecret":
+		common.LogtoAppSecret = value
 	case "Footer":
 		common.Footer = value
 	case "SystemName":
