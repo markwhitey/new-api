@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/logto-io/go/client"
@@ -123,6 +124,7 @@ func LogtoBind(c *gin.Context) {
 		})
 		return
 	}
+
 	code := c.Query("code")
 	githubUser, err := getGitHubUserInfoByCode(code)
 	if err != nil {
@@ -132,9 +134,11 @@ func LogtoBind(c *gin.Context) {
 		})
 		return
 	}
+
 	user := model.User{
 		GitHubId: githubUser.Login,
 	}
+
 	if model.IsLogtoIdAlreadyTaken(user.GitHubId) {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -142,10 +146,12 @@ func LogtoBind(c *gin.Context) {
 		})
 		return
 	}
+
 	session := sessions.Default(c)
 	id := session.Get("id")
 	// id := c.GetInt("id")  // critical bug!
 	user.Id = id.(int)
+
 	err = user.FillUserById()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -154,7 +160,21 @@ func LogtoBind(c *gin.Context) {
 		})
 		return
 	}
-	user.GitHubId = githubUser.Login
+
+	// 调用 LogtoUserInfo 获取用户信息并处理错误
+	logtoUser, err := LogtoUserInfo(c)
+	if err != nil {
+		// 如果获取 Logto 用户信息失败，返回错误响应
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// 这里将 logtoUser.UserID 赋值给 user.LogtoId
+	user.LogtoId = logtoUser.UserID
+
 	err = user.Update(false)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -163,11 +183,11 @@ func LogtoBind(c *gin.Context) {
 		})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "bind",
 	})
-	return
 }
 
 func LogtoSignIn(c *gin.Context) {
@@ -203,29 +223,31 @@ func LogtoCallback(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
-func LogtoUserInfo(c *gin.Context) *LogtoUser {
+func LogtoUserInfo(c *gin.Context) (*LogtoUser, error) {
+	// 获取 session 并创建 logtoClient
 	session := sessions.Default(c)
 	logtoClient := client.NewLogtoClient(logtoConfig, &SessionStorage{session: session})
 
+	// 检查是否已经登录认证
 	if !logtoClient.IsAuthenticated() {
-		c.String(http.StatusUnauthorized, "You are not logged in.")
-		return nil
+		return nil, fmt.Errorf("unauthorized: user not authenticated")
 	}
 
 	// 获取用户信息
 	userInfo, err := logtoClient.FetchUserInfo()
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return nil
+		// 如果获取用户信息失败，返回错误
+		return nil, fmt.Errorf("failed to fetch user info: %w", err)
 	}
 
+	// 构造 LogtoUser 对象
 	logtoUser := &LogtoUser{
 		UserID: userInfo.Sub,
 		Email:  userInfo.Email,
 	}
 
-	c.JSON(http.StatusOK, logtoUser)
-	return logtoUser
+	// 返回用户信息而不是直接返回给客户端
+	return logtoUser, nil
 }
 
 func LogtoSignOut(c *gin.Context) {

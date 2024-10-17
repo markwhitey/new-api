@@ -50,6 +50,14 @@ func UpdateOption(c *gin.Context) {
 			})
 			return
 		}
+	case "LogtoOAuthEnabled":
+		if option.Value == "true" && common.LogtoAppId == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无法启用 Logto OAuth，请先填入 Logto id",
+			})
+			return
+		}
 	case "EmailDomainRestrictionEnabled":
 		if option.Value == "true" && len(common.EmailDomainWhitelist) == 0 {
 			c.JSON(http.StatusOK, gin.H{
