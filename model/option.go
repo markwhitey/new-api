@@ -75,6 +75,7 @@ func InitOptionMap() {
 	common.OptionMap["GitHubClientSecret"] = ""
 	common.OptionMap["LogtoAppId"] = ""
 	common.OptionMap["LogtoAppSecret"] = ""
+	common.OptionMap["LogtoEndpoint"] = ""
 	common.OptionMap["TelegramBotToken"] = ""
 	common.OptionMap["TelegramBotName"] = ""
 	common.OptionMap["WeChatServerAddress"] = ""
@@ -276,6 +277,8 @@ func updateOptionMap(key string, value string) (err error) {
 		common.LogtoAppId = value
 	case "LogtoAppSecret":
 		common.LogtoAppSecret = value
+	case "LogtoEndpoint":
+		common.LogtoEndpoint = value
 	case "Footer":
 		common.Footer = value
 	case "SystemName":

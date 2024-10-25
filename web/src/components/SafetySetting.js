@@ -20,6 +20,10 @@ const SafetySetting = () => {
     GitHubOAuthEnabled: '',
     GitHubClientId: '',
     GitHubClientSecret: '',
+    LogtoOAuthEnabled: '',
+    LogtoEndpoint: '',
+    LogtoAppId: '',
+    LogtoAppSecret: '',
     Notice: '',
     SMTPServer: '',
     SMTPPort: '',
@@ -103,6 +107,7 @@ const SafetySetting = () => {
       case 'PasswordRegisterEnabled':
       case 'EmailVerificationEnabled':
       case 'GitHubOAuthEnabled':
+      case 'LogtoOAuthEnabled':
       case 'WeChatAuthEnabled':
       case 'TelegramOAuthEnabled':
       case 'TurnstileCheckEnabled':
@@ -155,6 +160,9 @@ const SafetySetting = () => {
       name === 'PayAddress' ||
       name === 'GitHubClientId' ||
       name === 'GitHubClientSecret' ||
+      name === 'LogtoAppId' ||
+      name === 'LogtoEndpoint' ||
+      name === 'LogtoAppSecret' ||
       name === 'WeChatServerAddress' ||
       name === 'WeChatServerToken' ||
       name === 'WeChatAccountQRCodeImageURL' ||
@@ -277,6 +285,24 @@ const SafetySetting = () => {
       inputs.GitHubClientSecret !== ''
     ) {
       await updateOption('GitHubClientSecret', inputs.GitHubClientSecret);
+    }
+  };
+
+  const submitLogtoOAuth = async () => {
+    if (originInputs['LogtoAppId'] !== inputs.LogtoAppId) {
+      await updateOption('LogtoAppId', inputs.LogtoAppId);
+    }
+    if (
+        originInputs['LogtoAppSecret'] !== inputs.LogtoAppSecret &&
+        inputs.LogtoAppSecret !== ''
+    ) {
+      await updateOption('LogtoAppSecret', inputs.LogtoAppSecret);
+    }
+    if (
+        originInputs['LogtoEndpoint'] !== inputs.LogtoEndpoint &&
+        inputs.LogtoEndpoint !== ''
+    ) {
+      await updateOption('LogtoEndpoint', inputs.LogtoEndpoint);
     }
   };
 
@@ -482,6 +508,12 @@ const SafetySetting = () => {
               label='允许通过 GitHub 账户登录 & 注册'
               name='GitHubOAuthEnabled'
               onChange={handleInputChange}
+            />
+            <Form.Checkbox
+                checked={inputs.LogtoOAuthEnabled === 'true'}
+                label='允许通过 GitHub 账户登录 & 注册'
+                name='GitHubOAuthEnabled'
+                onChange={handleInputChange}
             />
             <Form.Checkbox
               checked={inputs.WeChatAuthEnabled === 'true'}

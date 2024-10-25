@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { UserContext } from '../context/User';
 import { API, getLogo, showError, showInfo, showSuccess, updateAPI } from '../helpers';
-import { onGitHubOAuthClicked } from './utils';
+import {getOAuthState, onGitHubOAuthClicked} from './utils';
 import Turnstile from 'react-turnstile';
 import {
   Button,
@@ -153,6 +153,13 @@ const LoginForm = () => {
     }
   };
 
+  const onLogtoLoginClicked = () => {
+    // 直接重定向到后端的 /api/signin 以触发 Logto 登录
+    window.location.href = '/api/signin';
+  };
+
+
+
   return (
     <div>
       <Layout>
@@ -213,6 +220,7 @@ const LoginForm = () => {
                   </Text>
                 </div>
                 {status.github_oauth ||
+                status.logto_oauth ||
                 status.wechat_login ||
                 status.telegram_oauth ? (
                   <>
@@ -236,6 +244,15 @@ const LoginForm = () => {
                         />
                       ) : (
                         <></>
+                      )}
+                      {status.logto_oauth ? (
+                          <Button
+                              type='primary'
+                              icon={<IconGithubLogo />}
+                              onClick={onLogtoLoginClicked}  // 修改这里
+                          />
+                      ) : (
+                          <></>
                       )}
                       {status.wechat_login ? (
                         <Button
