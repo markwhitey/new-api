@@ -20,6 +20,10 @@ const SystemSetting = () => {
     GitHubOAuthEnabled: '',
     GitHubClientId: '',
     GitHubClientSecret: '',
+    LogtoOAuthEnabled: '',
+    LogtoEndpoint: '',
+    LogtoAppId: '',
+    LogtoAppSecret: '',
     Notice: '',
     SMTPServer: '',
     SMTPPort: '',
@@ -103,6 +107,7 @@ const SystemSetting = () => {
       case 'PasswordRegisterEnabled':
       case 'EmailVerificationEnabled':
       case 'GitHubOAuthEnabled':
+      case 'LogtoOAuthEnabled':
       case 'WeChatAuthEnabled':
       case 'TelegramOAuthEnabled':
       case 'TurnstileCheckEnabled':
@@ -155,6 +160,9 @@ const SystemSetting = () => {
       name === 'PayAddress' ||
       name === 'GitHubClientId' ||
       name === 'GitHubClientSecret' ||
+      name === 'LogtoAppId' ||
+      name === 'LogtoEndpoint' ||
+      name === 'LogtoAppSecret' ||
       name === 'WeChatServerAddress' ||
       name === 'WeChatServerToken' ||
       name === 'WeChatAccountQRCodeImageURL' ||
@@ -277,6 +285,24 @@ const SystemSetting = () => {
       inputs.GitHubClientSecret !== ''
     ) {
       await updateOption('GitHubClientSecret', inputs.GitHubClientSecret);
+    }
+  };
+
+  const submitLogtoOAuth = async () => {
+    if (originInputs['LogtoAppId'] !== inputs.LogtoAppId) {
+      await updateOption('LogtoAppId', inputs.LogtoAppId);
+    }
+    if (
+        originInputs['LogtoAppSecret'] !== inputs.LogtoAppSecret &&
+        inputs.LogtoAppSecret !== ''
+    ) {
+      await updateOption('LogtoAppSecret', inputs.LogtoAppSecret);
+    }
+    if (
+        originInputs['LogtoEndpoint'] !== inputs.LogtoEndpoint &&
+        inputs.LogtoEndpoint !== ''
+    ) {
+      await updateOption('LogtoEndpoint', inputs.LogtoEndpoint);
     }
   };
 
@@ -484,6 +510,12 @@ const SystemSetting = () => {
               onChange={handleInputChange}
             />
             <Form.Checkbox
+                checked={inputs.LogtoOAuthEnabled === 'true'}
+                label='允许通过 Logto 账户登录 & 注册'
+                name='LogtoOAuthEnabled'
+                onChange={handleInputChange}
+            />
+            <Form.Checkbox
               checked={inputs.WeChatAuthEnabled === 'true'}
               label='允许通过微信登录 & 注册'
               name='WeChatAuthEnabled'
@@ -675,6 +707,54 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitGitHubOAuth}>
             保存 GitHub OAuth 设置
+          </Form.Button>
+          <Divider />
+          <Header as='h3' inverted={isDark}>
+            配置 Logto App
+            <Header.Subheader>
+              用以支持通过 Logto 进行登录注册，
+              <a
+                  href='https://logto.io/'
+                  target='_blank'
+                  rel='noreferrer'
+              >
+                点击此处
+              </a>
+              管理你的 logto
+            </Header.Subheader>
+          </Header>
+          <Message>
+            具体使用指南请查询文档
+          </Message>
+          <Form.Group widths={3}>
+            <Form.Input
+                label='LogtoEndpoint'
+                name='LogtoEndpoint'
+                onChange={handleInputChange}
+                autoComplete='new-password'
+                value={inputs.LogtoEndpoint}
+                placeholder='输入你注册的 LogtoEndpoint'
+            />
+            <Form.Input
+                label='LogtoAppId'
+                name='LogtoAppId'
+                onChange={handleInputChange}
+                autoComplete='new-password'
+                value={inputs.LogtoAppId}
+                placeholder='输入你注册的 LogtoAppId'
+            />
+            <Form.Input
+                label='LogtoAppSecret'
+                name='LogtoAppSecret'
+                onChange={handleInputChange}
+                type='password'
+                autoComplete='new-password'
+                value={inputs.LogtoAppSecret}
+                placeholder='敏感信息不会发送到前端显示'
+            />
+          </Form.Group>
+          <Form.Button onClick={submitLogtoOAuth}>
+            保存 Logto OAuth 设置
           </Form.Button>
           <Divider />
           <Header as='h3' inverted={isDark}>
