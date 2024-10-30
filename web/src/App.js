@@ -26,6 +26,8 @@ import Midjourney from './pages/Midjourney';
 import Pricing from './pages/Pricing/index.js';
 import Task from "./pages/Task/index.js";
 import Playground from './components/Playground.js';
+import LogtoOAuth from './components/LogtoOAuth.js';
+
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
@@ -180,6 +182,14 @@ function App() {
               <GitHubOAuth />
             </Suspense>
           }
+        />
+        <Route
+            path='/login-success'
+            element={
+            <Suspense fallback={<Loading></Loading>}>
+              <LogtoOAuth />
+            </Suspense>
+        }
         />
         <Route
           path='/setting'
