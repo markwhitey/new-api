@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -138,8 +138,13 @@ func main() {
 	server.Use(middleware.RequestId())
 	middleware.SetUpLogger(server)
 	// Initialize session store
-	store := cookie.NewStore([]byte(common.SessionSecret))
-	server.Use(sessions.Sessions("session", store))
+	store, err := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("your session secret"))
+	if err != nil {
+		log.Fatalf("Failed to create Redis session store: %v", err)
+	}
+
+	// 设置 Redis 存储为会话中间件
+	server.Use(sessions.Sessions("logto-session", store))
 
 	router.SetRouter(server, buildFS, indexPage)
 	var port = os.Getenv("PORT")

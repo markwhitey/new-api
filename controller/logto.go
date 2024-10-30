@@ -5,17 +5,20 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/logto-io/go/client"
+	"log"
 	"net/http"
 	"one-api/common"
 	"one-api/model"
 )
 
 // 定义 Logto 的配置
-var logtoConfig = &client.LogtoConfig{
-	Endpoint:  "https://login.aiki.cc/",
-	AppId:     "pweleqg56ilp5qbs49e77",
-	AppSecret: "lb9619t5cmhwfX4QfMed3VBuh14xjC86",
-	Scopes:    []string{"email"},
+func getLogtoConfig() *client.LogtoConfig {
+	return &client.LogtoConfig{
+		Endpoint:  common.LogtoEndpoint,
+		AppId:     common.LogtoAppId,
+		AppSecret: common.LogtoAppSecret,
+		Scopes:    []string{"email"},
+	}
 }
 
 type LogtoUser struct {
@@ -26,10 +29,10 @@ type LogtoUser struct {
 func LogtoSignIn(c *gin.Context) {
 	session := sessions.Default(c)
 	logtoClient := client.NewLogtoClient(
-		logtoConfig,
+		getLogtoConfig(),
 		&SessionStorage{session: session},
 	)
-	fmt.Println(common.LogtoEndpoint) // 打印生成的 URL
+	fmt.Println(common.LogtoEndpoint)
 	signInUri, err := logtoClient.SignIn("http://localhost:3000/api/callback")
 	fmt.Println("Generated signInUri:", signInUri) // 打印生成的 URL
 	if err != nil {
@@ -44,12 +47,13 @@ func LogtoSignIn(c *gin.Context) {
 func LogtoCallback(c *gin.Context) {
 	session := sessions.Default(c)
 	logtoClient := client.NewLogtoClient(
-		logtoConfig,
+		getLogtoConfig(),
 		&SessionStorage{session: session},
 	)
 
 	err := logtoClient.HandleSignInCallback(c.Request)
 	if err != nil {
+		log.Printf("HandleSignInCallback failed: %v", err) // 记录错误信息
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "Logto 登录失败",
@@ -111,20 +115,50 @@ func LogtoCallback(c *gin.Context) {
 		}
 	}
 
-	// 设置会话
+	c.Redirect(http.StatusTemporaryRedirect, "/login-success") // 前端处理登录成功的页面
+
+}
+
+func LogtoUserStatus(c *gin.Context) {
+	// 获取 Logto 用户信息
+	logtoUser, err := LogtoUserInfo(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"logged_in": false,
+			"message":   "用户未登录",
+		})
+		return
+	}
+
+	// 根据 LogtoId 查找或创建用户
+	user := model.User{
+		LogtoId: logtoUser.UserID,
+	}
+	err = user.FillUserByLogtoId()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"logged_in": false,
+			"message":   "获取用户信息失败",
+		})
+		return
+	}
+
+	if user.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"logged_in": false,
+			"message":   "用户未注册",
+		})
+		return
+	}
+
+	// 设置会话并返回用户信息
 	setupLogin(&user, c)
 
-	// 返回 JSON 响应，通知前端登录成功
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "登录成功",
-		"data":    user, // 返回用户数据给前端
-	})
 }
 
 func LogtoUserInfo(c *gin.Context) (*LogtoUser, error) {
 	session := sessions.Default(c)
-	logtoClient := client.NewLogtoClient(logtoConfig, &SessionStorage{session: session})
+	logtoClient := client.NewLogtoClient(getLogtoConfig(), &SessionStorage{session: session})
 
 	if !logtoClient.IsAuthenticated() {
 		return nil, fmt.Errorf("unauthorized: user not authenticated")
@@ -146,7 +180,7 @@ func LogtoUserInfo(c *gin.Context) (*LogtoUser, error) {
 func LogtoSignOut(c *gin.Context) {
 	session := sessions.Default(c)
 	logtoClient := client.NewLogtoClient(
-		logtoConfig,
+		getLogtoConfig(),
 		&SessionStorage{session: session},
 	)
 
