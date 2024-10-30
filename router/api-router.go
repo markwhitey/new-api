@@ -29,6 +29,7 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/signin", middleware.CriticalRateLimit(), controller.LogtoSignIn)
 		apiRouter.GET("/callback", middleware.CriticalRateLimit(), controller.LogtoCallback)
 		apiRouter.GET("/signout", middleware.CriticalRateLimit(), controller.LogtoSignOut)
+		apiRouter.GET("/logto_status", middleware.CriticalRateLimit(), controller.LogtoUserStatus)
 
 		apiRouter.GET("/oauth/state", middleware.CriticalRateLimit(), controller.GenerateOAuthCode)
 		apiRouter.GET("/oauth/wechat", middleware.CriticalRateLimit(), controller.WeChatAuth)
