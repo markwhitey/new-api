@@ -1,11 +1,11 @@
-import { useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {API, showError, showSuccess, updateAPI} from '../helpers';
 import { UserContext } from '../context/User';
 import {setUserData} from "../helpers/data.js";
 
 const LogtoRedirectHandler = () => {
-    const [userDispatch] = useContext(UserContext);
+    const [userState, userDispatch] = useContext(UserContext);
     let navigate = useNavigate();
 
     useEffect(() => {

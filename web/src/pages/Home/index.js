@@ -83,26 +83,6 @@ const Home = () => {
                       ? statusState?.status?.version
                       : 'unknown'}
                   </p>
-                  <p>
-                    源码：
-                    <a
-                      href='https://github.com/Calcium-Ion/new-api'
-                      target='_blank'
-                      rel='noreferrer'
-                    >
-                      https://github.com/Calcium-Ion/new-api
-                    </a>
-                  </p>
-                  <p>
-                    协议：
-                    <a
-                      href='https://www.apache.org/licenses/LICENSE-2.0'
-                      target='_blank'
-                      rel='noreferrer'
-                    >
-                      Apache-2.0 License
-                    </a>
-                  </p>
                   <p>启动时间：{getStartTimeString()}</p>
                 </Card>
               </Col>
@@ -122,31 +102,13 @@ const Home = () => {
                 >
                   <p>
                     邮箱验证：
-                    {statusState?.status?.email_verification === true
-                      ? '已启用'
-                      : '未启用'}
-                  </p>
-                  <p>
-                    GitHub 身份验证：
-                    {statusState?.status?.github_oauth === true
-                      ? '已启用'
-                      : '未启用'}
-                  </p>
-                  <p>
-                    微信身份验证：
-                    {statusState?.status?.wechat_login === true
+                    {statusState?.status?.logto_oauth === true
                       ? '已启用'
                       : '未启用'}
                   </p>
                   <p>
                     Turnstile 用户校验：
                     {statusState?.status?.turnstile_check === true
-                      ? '已启用'
-                      : '未启用'}
-                  </p>
-                  <p>
-                    Telegram 身份验证：
-                    {statusState?.status?.telegram_oauth === true
                       ? '已启用'
                       : '未启用'}
                   </p>

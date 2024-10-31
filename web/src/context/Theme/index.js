@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState } from 'react';
 
-const ThemeContext = createContext(null);
+const ThemeContext = createContext('dark');
 export const useTheme = () => useContext(ThemeContext);
 
 const SetThemeContext = createContext(null);
