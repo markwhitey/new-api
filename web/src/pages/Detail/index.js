@@ -321,7 +321,9 @@ const Detail = (props) => {
     // }
     if (!initialized.current) {
       initVChartSemiTheme({
+        defaultMode: 'dark',
         isWatchingThemeSwitch: true,
+
       });
       initialized.current = true;
       initChart();

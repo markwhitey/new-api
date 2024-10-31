@@ -92,7 +92,7 @@ func LogtoCallback(c *gin.Context) {
 		}
 	} else {
 		if common.RegisterEnabled {
-			user.Username = "Logto User" + logtoUser.UserID
+			user.Username = logtoUser.Email
 			user.DisplayName = "Logto User"
 			user.Email = logtoUser.Email
 			user.Role = common.RoleCommonUser
