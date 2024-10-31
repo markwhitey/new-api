@@ -112,7 +112,7 @@ const HeaderBar = () => {
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
                 about: '/about',
-                login: '/login',
+                login: '/api/signin',
                 register: '/register',
                 home: '/',
               };
@@ -196,12 +196,10 @@ const HeaderBar = () => {
                     <Nav.Item
                       itemKey={'login'}
                       text={'登录'}
+                      onClick={() => {
+                        window.location.href = '/api/signin';
+                      }}
                       // icon={<IconKey />}
-                    />
-                    <Nav.Item
-                      itemKey={'register'}
-                      text={'注册'}
-                      icon={<IconUser />}
                     />
                   </>
                 )}

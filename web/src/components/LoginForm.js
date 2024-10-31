@@ -17,7 +17,7 @@ import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import TelegramLoginButton from 'react-telegram-login';
 
-import { IconGithubLogo } from '@douyinfe/semi-icons';
+import { IconKey } from '@douyinfe/semi-icons';
 import WeChatIcon from './WeChatIcon';
 import { setUserData } from '../helpers/data.js';
 
@@ -248,7 +248,7 @@ const LoginForm = () => {
                       {status.logto_oauth ? (
                           <Button
                               type='primary'
-                              icon={<IconGithubLogo />}
+                              icon={<IconKey />}
                               onClick={onLogtoLoginClicked}  // 修改这里
                           />
                       ) : (
