@@ -225,7 +225,7 @@ const LoginForm = () => {
                 status.telegram_oauth ? (
                   <>
                     <Divider margin='12px' align='center'>
-                      第三方登录
+                      AIKI 用已注册用户请点击下方一键登录！！！
                     </Divider>
                     <div
                       style={{
