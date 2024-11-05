@@ -55,6 +55,15 @@ func LogtoCallback(c *gin.Context) {
 	callbackUri := client.GetOriginRequestUrl(c.Request)
 	log.Printf("Original callback URI from request: %s", callbackUri)
 
+	// 确保 request.Host 使用原始主机名
+	if c.Request.Header.Get("X-Forwarded-Host") != "" {
+		c.Request.Host = c.Request.Header.Get("X-Forwarded-Host")
+	}
+	if c.Request.Header.Get("X-Forwarded-Proto") != "" {
+		scheme := c.Request.Header.Get("X-Forwarded-Proto")
+		log.Printf("Overriding protocol to: %s", scheme)
+	}
+
 	err := logtoClient.HandleSignInCallback(c.Request)
 	if err != nil {
 		log.Printf("HandleSignInCallback failed: %v", err) // 记录错误信息
