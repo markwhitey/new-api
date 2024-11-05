@@ -33,7 +33,7 @@ func LogtoSignIn(c *gin.Context) {
 		&SessionStorage{session: session},
 	)
 	fmt.Println(common.LogtoEndpoint)
-	signInUri, err := logtoClient.SignIn("https://api.aiki.cc/api/callback")
+	signInUri, err := logtoClient.SignIn("http://localhost:3000/api/callback")
 	fmt.Println("Generated signInUri:", signInUri) // 打印生成的 URL
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -50,6 +50,10 @@ func LogtoCallback(c *gin.Context) {
 		getLogtoConfig(),
 		&SessionStorage{session: session},
 	)
+
+	// 打印请求的 URL，方便调试
+	callbackUri := client.GetOriginRequestUrl(c.Request)
+	log.Printf("Original callback URI from request: %s", callbackUri)
 
 	err := logtoClient.HandleSignInCallback(c.Request)
 	if err != nil {
