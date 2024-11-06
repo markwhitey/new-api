@@ -91,6 +91,7 @@ const SiderBar = () => {
         // to: '/chat',
         items: chatItems,
         icon: <IconComment />,
+        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
         // className: localStorage.getItem('chat_link')
         //   ? 'semi-navigation-item-normal'
         //   : 'tableHiddle',
