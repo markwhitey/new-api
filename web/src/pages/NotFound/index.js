@@ -5,7 +5,7 @@ const NotFound = () => (
   <>
     <Message warning>
       <Message.Header>正在处理中.....</Message.Header>
-      <p>请稍后</p>
+      <p></p>
     </Message>
   </>
 );
