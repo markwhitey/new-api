@@ -39,7 +39,6 @@ func GetStatus(c *gin.Context) {
 			"github_oauth":             common.GitHubOAuthEnabled,
 			"logto_oauth":              common.LogtoOAuthEnabled,
 			"github_client_id":         common.GitHubClientId,
-			"logto_oauth":              common.LogtoOAuthEnabled,
 			"logto_app_id":             common.LogtoAppId,
 			"logto_endpoint":           common.LogtoEndpoint,
 			"telegram_oauth":           common.TelegramOAuthEnabled,
