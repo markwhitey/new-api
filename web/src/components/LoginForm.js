@@ -177,6 +177,48 @@ const LoginForm = () => {
                 <Title heading={2} style={{ textAlign: 'center' }}>
                   用户登录
                 </Title>
+                <Form>
+                  <Form.Input
+                    field={'username'}
+                    label={'用户名'}
+                    placeholder='用户名'
+                    name='username'
+                    onChange={(value) => handleChange('username', value)}
+                  />
+                  <Form.Input
+                    field={'password'}
+                    label={'密码'}
+                    placeholder='密码'
+                    name='password'
+                    type='password'
+                    onChange={(value) => handleChange('password', value)}
+                  />
+
+                  <Button
+                    theme='solid'
+                    style={{ width: '100%' }}
+                    type={'primary'}
+                    size='large'
+                    htmlType={'submit'}
+                    onClick={handleSubmit}
+                  >
+                    登录
+                  </Button>
+                </Form>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20,
+                  }}
+                >
+                  <Text>
+                    没有账号请先 <Link to='/register'>注册账号</Link>
+                  </Text>
+                  <Text>
+                    忘记密码 <Link to='/reset'>点击重置</Link>
+                  </Text>
+                </div>
                 {status.github_oauth ||
                 status.logto_oauth ||
                 status.wechat_login ||
