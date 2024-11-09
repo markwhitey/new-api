@@ -157,10 +157,13 @@ const TopUp = () => {
 
   useEffect(() => {
     let status = localStorage.getItem('status');
+    let user = localStorage.getItem('user');
     if (status) {
       status = JSON.parse(status);
+      user = JSON.parse(user);
       if (status.top_up_link) {
-        setTopUpLink(status.top_up_link);
+        const topUpLinkWithEmail = user.username ? `${status.top_up_link}?email=${user.username}` : status.top_up_link;
+        setTopUpLink(topUpLinkWithEmail);
       }
       if (status.min_topup) {
         setMinTopUp(status.min_topup);
@@ -217,19 +220,6 @@ const TopUp = () => {
           <h3>我的钱包</h3>
         </Layout.Header>
         <Layout.Content>
-          <Modal
-            title='确定要充值吗'
-            visible={open}
-            onOk={onlineTopUp}
-            onCancel={handleCancel}
-            maskClosable={false}
-            size={'small'}
-            centered={true}
-          >
-            <p>充值数量：{topUpCount}</p>
-            <p>实付金额：{renderAmount()}</p>
-            <p>是否确认充值？</p>
-          </Modal>
           <div
             style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}
           >
@@ -271,52 +261,7 @@ const TopUp = () => {
                   </Space>
                 </Form>
               </div>
-              <div style={{ marginTop: 20 }}>
-                <Divider>在线充值</Divider>
-                <Form>
-                  <Form.Input
-                    disabled={!enableOnlineTopUp}
-                    field={'redemptionCount'}
-                    label={'实付金额：' + renderAmount()}
-                    placeholder={
-                      '充值数量，最低 ' + renderQuotaWithAmount(minTopUp)
-                    }
-                    name='redemptionCount'
-                    type={'number'}
-                    value={topUpCount}
-                    onChange={async (value) => {
-                      if (value < 1) {
-                        value = 1;
-                      }
-                      setTopUpCount(value);
-                      await getAmount(value);
-                    }}
-                  />
-                  <Space>
-                    <Button
-                      type={'primary'}
-                      theme={'solid'}
-                      onClick={async () => {
-                        preTopUp('zfb');
-                      }}
-                    >
-                      支付宝
-                    </Button>
-                    <Button
-                      style={{
-                        backgroundColor: 'rgba(var(--semi-green-5), 1)',
-                      }}
-                      type={'primary'}
-                      theme={'solid'}
-                      onClick={async () => {
-                        preTopUp('wx');
-                      }}
-                    >
-                      微信
-                    </Button>
-                  </Space>
-                </Form>
-              </div>
+
               {/*<div style={{ display: 'flex', justifyContent: 'right' }}>*/}
               {/*    <Text>*/}
               {/*        <Link onClick={*/}

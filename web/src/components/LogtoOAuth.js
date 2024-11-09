@@ -24,12 +24,12 @@ const LogtoRedirectHandler = () => {
                     navigate('/'); // 跳转到主页
                 } else {
                     showError('用户未登录，请重新登录。');
-                    navigate('/login'); // 跳转到登录页面
+                    navigate('/'); // 跳转到登录页面
                 }
             } catch (error) {
                 console.error('获取登录状态失败:', error);
                 showError('登录失败，请重试！');
-                navigate('/login'); // 跳转到登录页面
+                navigate('/'); // 跳转到登录页面
             }
         };
 

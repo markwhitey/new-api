@@ -75,7 +75,7 @@ const HeaderBar = () => {
     showSuccess('注销成功!');
     userDispatch({ type: 'logout' });
     localStorage.removeItem('user');
-    navigate('/login');
+    navigate('/');
   }
 
   const handleNewYearClick = () => {
