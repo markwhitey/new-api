@@ -11,7 +11,6 @@ import (
 	"one-api/common"
 	"one-api/constant"
 	"one-api/dto"
-	relaycommon "one-api/relay/common"
 	"strings"
 	"unicode/utf8"
 )
@@ -19,7 +18,6 @@ import (
 // tokenEncoderMap won't grow after initialization
 var tokenEncoderMap = map[string]*tiktoken.Tiktoken{}
 var defaultTokenEncoder *tiktoken.Tiktoken
-var cl200kTokenEncoder *tiktoken.Tiktoken
 
 func InitTokenEncoders() {
 	common.SysLog("initializing token encoders")
@@ -32,31 +30,27 @@ func InitTokenEncoders() {
 	if err != nil {
 		common.FatalLog(fmt.Sprintf("failed to get gpt-4 token encoder: %s", err.Error()))
 	}
-	cl200kTokenEncoder, err = tiktoken.EncodingForModel("gpt-4o")
+
+	gpt4oTokenEncoder, err := tiktoken.EncodingForModel("gpt-4o")
 	if err != nil {
 		common.FatalLog(fmt.Sprintf("failed to get gpt-4o token encoder: %s", err.Error()))
 	}
 	for model, _ := range common.GetDefaultModelRatioMap() {
 		if strings.HasPrefix(model, "gpt-3.5") {
 			tokenEncoderMap[model] = gpt35TokenEncoder
+		} else if strings.HasPrefix(model, "gpt-4o") {
+			tokenEncoderMap[model] = gpt4oTokenEncoder
+		} else if strings.HasPrefix(model, "chatgpt-4o") {
+			tokenEncoderMap[model] = gpt4oTokenEncoder
+		} else if "o1" == model || strings.HasPrefix(model, "o1") {
+			tokenEncoderMap[model] = gpt4oTokenEncoder
 		} else if strings.HasPrefix(model, "gpt-4") {
-			if strings.HasPrefix(model, "gpt-4o") {
-				tokenEncoderMap[model] = cl200kTokenEncoder
-			} else {
-				tokenEncoderMap[model] = gpt4TokenEncoder
-			}
+			tokenEncoderMap[model] = gpt4TokenEncoder
 		} else {
 			tokenEncoderMap[model] = nil
 		}
 	}
 	common.SysLog("token encoders initialized")
-}
-
-func getModelDefaultTokenEncoder(model string) *tiktoken.Tiktoken {
-	if strings.HasPrefix(model, "gpt-4o") || strings.HasPrefix(model, "chatgpt-4o") {
-		return cl200kTokenEncoder
-	}
-	return defaultTokenEncoder
 }
 
 func getTokenEncoder(model string) *tiktoken.Tiktoken {
@@ -69,13 +63,12 @@ func getTokenEncoder(model string) *tiktoken.Tiktoken {
 		tokenEncoder, err := tiktoken.EncodingForModel(model)
 		if err != nil {
 			common.SysError(fmt.Sprintf("failed to get token encoder for model %s: %s, using encoder for gpt-3.5-turbo", model, err.Error()))
-			tokenEncoder = getModelDefaultTokenEncoder(model)
+			tokenEncoder = defaultTokenEncoder
 		}
 		tokenEncoderMap[model] = tokenEncoder
 		return tokenEncoder
 	}
-	// 如果model不在tokenEncoderMap中，直接返回默认的tokenEncoder
-	return getModelDefaultTokenEncoder(model)
+	return defaultTokenEncoder
 }
 
 func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
@@ -112,10 +105,11 @@ func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (in
 	var err error
 	var format string
 	if strings.HasPrefix(imageUrl.Url, "http") {
-		config, format, err = DecodeUrlImageData(imageUrl.Url)
+		common.SysLog(fmt.Sprintf("downloading image: %s", imageUrl.Url))
+		config, format, err = common.DecodeUrlImageData(imageUrl.Url)
 	} else {
 		common.SysLog(fmt.Sprintf("decoding image"))
-		config, format, _, err = DecodeBase64ImageData(imageUrl.Url)
+		config, format, _, err = common.DecodeBase64ImageData(imageUrl.Url)
 	}
 	if err != nil {
 		return 0, err
@@ -192,72 +186,6 @@ func CountTokenChatRequest(request dto.GeneralOpenAIRequest, model string) (int,
 	return tkm, nil
 }
 
-func CountTokenRealtime(info *relaycommon.RelayInfo, request dto.RealtimeEvent, model string) (int, int, error) {
-	audioToken := 0
-	textToken := 0
-	switch request.Type {
-	case dto.RealtimeEventTypeSessionUpdate:
-		if request.Session != nil {
-			msgTokens, err := CountTextToken(request.Session.Instructions, model)
-			if err != nil {
-				return 0, 0, err
-			}
-			textToken += msgTokens
-		}
-	case dto.RealtimeEventResponseAudioDelta:
-		// count audio token
-		atk, err := CountAudioTokenOutput(request.Delta, info.OutputAudioFormat)
-		if err != nil {
-			return 0, 0, fmt.Errorf("error counting audio token: %v", err)
-		}
-		audioToken += atk
-	case dto.RealtimeEventResponseAudioTranscriptionDelta, dto.RealtimeEventResponseFunctionCallArgumentsDelta:
-		// count text token
-		tkm, err := CountTextToken(request.Delta, model)
-		if err != nil {
-			return 0, 0, fmt.Errorf("error counting text token: %v", err)
-		}
-		textToken += tkm
-	case dto.RealtimeEventInputAudioBufferAppend:
-		// count audio token
-		atk, err := CountAudioTokenInput(request.Audio, info.InputAudioFormat)
-		if err != nil {
-			return 0, 0, fmt.Errorf("error counting audio token: %v", err)
-		}
-		audioToken += atk
-	case dto.RealtimeEventConversationItemCreated:
-		if request.Item != nil {
-			switch request.Item.Type {
-			case "message":
-				for _, content := range request.Item.Content {
-					if content.Type == "input_text" {
-						tokens, err := CountTextToken(content.Text, model)
-						if err != nil {
-							return 0, 0, err
-						}
-						textToken += tokens
-					}
-				}
-			}
-		}
-	case dto.RealtimeEventTypeResponseDone:
-		// count tools token
-		if !info.IsFirstRequest {
-			if info.RealtimeTools != nil && len(info.RealtimeTools) > 0 {
-				for _, tool := range info.RealtimeTools {
-					toolTokens, err := CountTokenInput(tool, model)
-					if err != nil {
-						return 0, 0, err
-					}
-					textToken += 8
-					textToken += toolTokens
-				}
-			}
-		}
-	}
-	return textToken, audioToken, nil
-}
-
 func CountTokenMessages(messages []dto.Message, model string, stream bool) (int, error) {
 	//recover when panic
 	tokenEncoder := getTokenEncoder(model)
@@ -290,7 +218,7 @@ func CountTokenMessages(messages []dto.Message, model string, stream bool) (int,
 			} else {
 				arrayContent := message.ParseContent()
 				for _, m := range arrayContent {
-					if m.Type == dto.ContentTypeImageURL {
+					if m.Type == "image_url" {
 						imageUrl := m.ImageUrl.(dto.MessageImageUrl)
 						imageTokenNum, err := getImageToken(&imageUrl, model, stream)
 						if err != nil {
@@ -298,9 +226,6 @@ func CountTokenMessages(messages []dto.Message, model string, stream bool) (int,
 						}
 						tokenNum += imageTokenNum
 						log.Printf("image token num: %d", imageTokenNum)
-					} else if m.Type == dto.ContentTypeInputAudio {
-						// TODO: 音频token数量计算
-						tokenNum += 100
 					} else {
 						tokenNum += getTokenNum(tokenEncoder, m.Text)
 					}
@@ -315,13 +240,13 @@ func CountTokenMessages(messages []dto.Message, model string, stream bool) (int,
 func CountTokenInput(input any, model string) (int, error) {
 	switch v := input.(type) {
 	case string:
-		return CountTextToken(v, model)
+		return CountTokenText(v, model)
 	case []string:
 		text := ""
 		for _, s := range v {
 			text += s
 		}
-		return CountTextToken(text, model)
+		return CountTokenText(text, model)
 	}
 	return CountTokenInput(fmt.Sprintf("%v", input), model)
 }
@@ -343,44 +268,16 @@ func CountTokenStreamChoices(messages []dto.ChatCompletionsStreamResponseChoice,
 	return tokens
 }
 
-func CountTTSToken(text string, model string) (int, error) {
+func CountAudioToken(text string, model string) (int, error) {
 	if strings.HasPrefix(model, "tts") {
 		return utf8.RuneCountInString(text), nil
 	} else {
-		return CountTextToken(text, model)
+		return CountTokenText(text, model)
 	}
 }
 
-func CountAudioTokenInput(audioBase64 string, audioFormat string) (int, error) {
-	if audioBase64 == "" {
-		return 0, nil
-	}
-	duration, err := parseAudio(audioBase64, audioFormat)
-	if err != nil {
-		return 0, err
-	}
-	return int(duration / 60 * 100 / 0.06), nil
-}
-
-func CountAudioTokenOutput(audioBase64 string, audioFormat string) (int, error) {
-	if audioBase64 == "" {
-		return 0, nil
-	}
-	duration, err := parseAudio(audioBase64, audioFormat)
-	if err != nil {
-		return 0, err
-	}
-	return int(duration / 60 * 200 / 0.24), nil
-}
-
-//func CountAudioToken(sec float64, audioType string) {
-//	if audioType == "input" {
-//
-//	}
-//}
-
-// CountTextToken 统计文本的token数量，仅当文本包含敏感词，返回错误，同时返回token数量
-func CountTextToken(text string, model string) (int, error) {
+// CountTokenText 统计文本的token数量，仅当文本包含敏感词，返回错误，同时返回token数量
+func CountTokenText(text string, model string) (int, error) {
 	var err error
 	tokenEncoder := getTokenEncoder(model)
 	return getTokenNum(tokenEncoder, text), err

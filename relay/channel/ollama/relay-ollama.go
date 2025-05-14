@@ -73,10 +73,9 @@ func ollamaEmbeddingHandler(c *gin.Context, resp *http.Response, promptTokens in
 	if ollamaEmbeddingResponse.Error != "" {
 		return service.OpenAIErrorWrapper(err, "ollama_error", resp.StatusCode), nil
 	}
-	flattenedEmbeddings := flattenEmbeddings(ollamaEmbeddingResponse.Embedding)
 	data := make([]dto.OpenAIEmbeddingResponseItem, 0, 1)
 	data = append(data, dto.OpenAIEmbeddingResponseItem{
-		Embedding: flattenedEmbeddings,
+		Embedding: ollamaEmbeddingResponse.Embedding,
 		Object:    "embedding",
 	})
 	usage := &dto.Usage{
@@ -120,12 +119,4 @@ func ollamaEmbeddingHandler(c *gin.Context, resp *http.Response, promptTokens in
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
 	return nil, usage
-}
-
-func flattenEmbeddings(embeddings [][]float64) []float64 {
-flattened := []float64{}
-for _, row := range embeddings {
-	flattened = append(flattened, row...)
-}
-return flattened
 }

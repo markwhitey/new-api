@@ -138,7 +138,7 @@ func main() {
 	server.Use(middleware.RequestId())
 	middleware.SetUpLogger(server)
 	// Initialize session store
-	store, err := redis.NewStore(10, "tcp", "redis:6379", "", []byte(common.SessionSecret))
+	store, err := redis.NewStore(10, "tcp", "localhost:6379", "", []byte(common.SessionSecret))
 	if err != nil {
 		log.Fatalf("Failed to create Redis session store: %v", err)
 	}
