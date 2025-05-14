@@ -31,6 +31,7 @@ const SystemSetting = () => {
     SMTPFrom: '',
     SMTPToken: '',
     ServerAddress: '',
+    OutProxyUrl: '',
     WorkerUrl: '',
     WorkerValidKey: '',
     EpayId: '',
@@ -184,13 +185,10 @@ const SystemSetting = () => {
     await updateOption('ServerAddress', ServerAddress);
   };
 
-  const submitWorker = async () => {
-    let WorkerUrl = removeTrailingSlash(inputs.WorkerUrl);
-    await updateOption('WorkerUrl', WorkerUrl);
-    if (inputs.WorkerValidKey !== '') {
-      await updateOption('WorkerValidKey', inputs.WorkerValidKey);
-    }
-  }
+  const submitOutProxyUrl = async () => {
+    let OutProxyUrl = removeTrailingSlash(inputs.OutProxyUrl);
+    await updateOption('OutProxyUrl', OutProxyUrl);
+  };
 
   const submitPayAddress = async () => {
     if (inputs.ServerAddress === '') {

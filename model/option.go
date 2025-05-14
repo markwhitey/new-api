@@ -61,6 +61,7 @@ func InitOptionMap() {
 	common.OptionMap["SystemName"] = common.SystemName
 	common.OptionMap["Logo"] = common.Logo
 	common.OptionMap["ServerAddress"] = ""
+	common.OptionMap["OutProxyUrl"] = ""
 	common.OptionMap["WorkerUrl"] = constant.WorkerUrl
 	common.OptionMap["WorkerValidKey"] = constant.WorkerValidKey
 	common.OptionMap["PayAddress"] = ""
@@ -249,6 +250,8 @@ func updateOptionMap(key string, value string) (err error) {
 		common.SMTPToken = value
 	case "ServerAddress":
 		constant.ServerAddress = value
+	case "OutProxyUrl":
+		common.OutProxyUrl = value
 	case "WorkerUrl":
 		constant.WorkerUrl = value
 	case "WorkerValidKey":
